@@ -1,0 +1,60 @@
+# --- Allgemein ---
+.DS_Store
+Thumbs.db
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# --- Git / IDE ---
+.git
+.idea/
+.vscode/
+*.iml
+
+# --- Node / Package Manager ---
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# --- Env-Dateien ---
+.env
+.env.*
+!.env.example
+
+# Root-spezifische envs
+/.env
+/backend/.env
+/frontend/.env
+/frontend/.env.local
+
+# --- Build-Output ---
+dist/
+build/
+.tmp/
+.temp/
+coverage/
+.nyc_output/
+
+# Next.js
+.next/
+frontend/.next/
+frontend/out/
+
+# --- Prisma ---
+# generierter Client (kann aus schema neu erzeugt werden)
+backend/src/generated/
+backend/src/generated/prisma/
+prisma/generated/
+prisma/migrations/**/migration.sql
+
+# --- Docker ---
+docker-data/
+*.pid
+
+# --- Sonstiges ---
+*.swp
+*.swo
+*.tsbuildinfo

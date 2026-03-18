@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Computer {
+  id            String  @id
+  name          String  @unique
+  type          String
+  ipAddress     String?
+  status        String  @default("active")
+  raumId        String?
+  mitarbeiterId String?
+  studentId     String? @unique
+
+  raum        Raum?        @relation(fields: [raumId], references: [id])
+  mitarbeiter Mitarbeiter? @relation(fields: [mitarbeiterId], references: [id])
+  student     Student?     @relation(fields: [studentId], references: [id])
+
+  @@map("computers")
+}
+
+model Mitarbeiter {
+  id                  String               @id
+  name                String
+  email               String               @unique
+  computers           Computer[] // Ein Mitarbeiter kann mehrere Computer haben
+  workstationRequests WorkstationRequest[]
+
+  @@map("mitarbeiter")
+}
+
+model Student {
+  id       String    @id
+  name     String
+  email    String?   @unique
+  pool     Boolean   @default(true) // true = Poolplatz, false = personalisiert
+  computer Computer? // 1:1, ein personalisierter Rechner
+
+  @@map("students")
+}
+
+model Raum {
+  id        String     @id
+  name      String     @unique
+  computers Computer[]
+
+  @@map("raeume")
+}
+
+enum WorkType {
+  BACHELOR
+  MASTER
+  FORSCHUNGSPRAKTIKUM
+}
+
+enum RequestedComputerType {
+  POOL
+  PERSONALIZED
+}
+
+enum RequestedOs {
+  WINDOWS
+  LINUX
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model WorkstationRequest {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Antragsteller (Mitarbeiter)
+  mitarbeiterId String
+  mitarbeiter   Mitarbeiter @relation(fields: [mitarbeiterId], references: [id])
+
+  // Metadaten
+  workTopic String // Arbeitsthema
+  workType  WorkType
+
+  // Studentendaten (Snapshot zum Zeitpunkt des Antrags)
+  studentFirstName String
+  studentLastName  String
+  studentIdm       String // IdM-Kennung
+  studentEmail     String // FAU-Mail
+
+  requestedComputerType RequestedComputerType
+  requestedOs           RequestedOs? // nur bei PERSONALIZED
+
+  adminNote String?
+
+  status RequestStatus @default(PENDING)
+
+  @@map("workstation_requests")
+}
