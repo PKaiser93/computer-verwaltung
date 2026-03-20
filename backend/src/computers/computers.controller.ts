@@ -1,3 +1,4 @@
+// backend/src/computers/computers.controller.ts
 import {
   Body,
   Controller,
@@ -46,11 +47,11 @@ export class ComputersController {
 
   @Patch(':id/student')
   assignStudent(@Param('id') id: string, @Body() dto: AssignStudentDto) {
-    return this.computersService.assignStudent(id, dto.studentId);
+    return this.computersService.assignStudent(id, dto.studentId ?? null);
   }
 
   @Patch(':id/employee')
   assignEmployee(@Param('id') id: string, @Body() dto: AssignEmployeeDto) {
-    return this.computersService.assignEmployee(id, dto.employeeId);
+    return this.computersService.assignEmployee(id, dto.employeeId ?? null);
   }
 }

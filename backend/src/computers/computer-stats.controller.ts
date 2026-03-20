@@ -1,28 +1,28 @@
-// src/computers/computer-stats.controller.ts
+// backend/src/computers/computer-stats.controller.ts
 import { Controller, Get } from '@nestjs/common';
 import { ComputerStatsService } from './computer-stats.service';
 
-@Controller('stats/computers')
+@Controller('computers/stats')
 export class ComputerStatsController {
-  constructor(private readonly statsService: ComputerStatsService) {}
+  constructor(private readonly computerStatsService: ComputerStatsService) {}
 
-  @Get()
-  getStats() {
-    return this.statsService.getComputerStats();
+  @Get('overview')
+  getOverview() {
+    return this.computerStatsService.getOverview();
   }
 
   @Get('without-room')
   getWithoutRoom() {
-    return this.statsService.getComputersWithoutRoom();
+    return this.computerStatsService.getComputersWithoutRoom();
   }
 
   @Get('without-assignment')
   getWithoutAssignment() {
-    return this.statsService.getComputersWithoutAssignment();
+    return this.computerStatsService.getComputersWithoutAssignment();
   }
 
   @Get('maintenance')
   getMaintenance() {
-    return this.statsService.getMaintenanceComputers();
+    return this.computerStatsService.getMaintenanceComputers();
   }
 }

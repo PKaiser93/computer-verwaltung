@@ -1,4 +1,4 @@
-// src/computers/computer-stats.service.ts
+// backend/src/computers/computer-stats.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -6,7 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ComputerStatsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getComputerStats() {
+  async getOverview() {
     const [
       totalComputers,
       activeComputers,

@@ -1,11 +1,13 @@
-// src/computers/computer-stats.module.ts
+// backend/src/computers/computer-stats.module.ts
 import { Module } from '@nestjs/common';
 import { ComputerStatsService } from './computer-stats.service';
 import { ComputerStatsController } from './computer-stats.controller';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [ComputerStatsController],
-  providers: [ComputerStatsService, PrismaService],
+  providers: [ComputerStatsService],
+  exports: [ComputerStatsService],
 })
 export class ComputerStatsModule {}

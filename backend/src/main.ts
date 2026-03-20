@@ -1,3 +1,4 @@
+// backend/src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -8,21 +9,22 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Unbekannte Felder entfernen
-      forbidNonWhitelisted: true, // und dafür Fehler werfen
-      transform: true, // Payloads in DTO-Klassen casten
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
     }),
   );
 
   app.enableCors({
-    origin: true, // oder explizit: ['http://localhost:3000']
+    origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type,Authorization',
   });
 
-  const port = process.env.PORT || 3000;
   app.useGlobalFilters(new HttpExceptionFilter());
+
+  const port = process.env.PORT || 4000; // <--- statt 3000
   await app.listen(port);
-  console.log('Backend läuft auf http://localhost:3000');
+  console.log(`Backend läuft auf http://localhost:${port}`);
 }
 bootstrap();

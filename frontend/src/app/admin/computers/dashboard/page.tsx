@@ -44,10 +44,10 @@ export default function ComputerDashboardPage() {
         withoutAssignmentResult,
         maintenanceResult,
       ] = await Promise.all([
-        apiFetch<ComputerStats>('/stats/computers'),
-        apiFetch<SimpleComputer[]>('/stats/computers/without-room'),
-        apiFetch<SimpleComputer[]>('/stats/computers/without-assignment'),
-        apiFetch<SimpleComputer[]>('/stats/computers/maintenance'),
+        apiFetch<ComputerStats>('/computers/stats/overview'),
+        apiFetch<SimpleComputer[]>('/computers/stats/without-room'),
+        apiFetch<SimpleComputer[]>('/computers/stats/without-assignment'),
+        apiFetch<SimpleComputer[]>('/computers/stats/maintenance'),
       ]);
 
       if (

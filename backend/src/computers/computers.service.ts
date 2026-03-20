@@ -1,3 +1,4 @@
+// backend/src/computers/computers.service.ts
 import {
   BadRequestException,
   Injectable,
@@ -9,6 +10,7 @@ import { UpdateComputerDto } from './dto/update-computer.dto';
 import { ListComputersQuery } from './dto/list-computers.query';
 import { StudentAlreadyAssignedError } from '../common/errors/student-already-assigned.error';
 import { IdGeneratorService } from '../common/id-generator.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ComputersService {
@@ -22,10 +24,10 @@ export class ComputersService {
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.ComputerWhereInput = {};
 
     if (query.status) {
-      where.status = query.status;
+      where.status = query.status as any;
     }
 
     if (query.roomId) {
@@ -71,9 +73,11 @@ export class ComputersService {
         student: true,
       },
     });
+
     if (!computer) {
       throw new NotFoundException(`Computer ${id} nicht gefunden`);
     }
+
     return computer;
   }
 
@@ -81,15 +85,7 @@ export class ComputersService {
     const id = await this.idGenerator.generateComputerId();
 
     if (dto.studentId) {
-      const existing = await this.prisma.computer.findFirst({
-        where: { studentId: dto.studentId },
-      });
-
-      if (existing) {
-        throw new BadRequestException(
-          `Student ${dto.studentId} ist bereits einem Computer (${existing.name}) zugeordnet`,
-        );
-      }
+      await this.ensureStudentNotAssigned(dto.studentId);
     }
 
     return this.prisma.computer.create({
@@ -107,16 +103,6 @@ export class ComputersService {
   }
 
   async update(id: string, dto: UpdateComputerDto) {
-    if (dto.studentId) {
-      const existing = await this.prisma.computer.findFirst({
-        where: { studentId: dto.studentId, NOT: { id } },
-      });
-
-      if (existing) {
-        throw new StudentAlreadyAssignedError(dto.studentId, existing.name);
-      }
-    }
-
     const existingComputer = await this.prisma.computer.findUnique({
       where: { id },
     });
@@ -125,7 +111,6 @@ export class ComputersService {
       throw new NotFoundException(`Computer ${id} nicht gefunden`);
     }
 
-    // Optional: Name-Unique prüfen, falls geändert
     if (dto.name && dto.name !== existingComputer.name) {
       const nameTaken = await this.prisma.computer.findUnique({
         where: { name: dto.name },
@@ -137,20 +122,9 @@ export class ComputersService {
       }
     }
 
-    // Student darf nur an einem Computer hängen
     if (dto.studentId) {
-      const existingForStudent = await this.prisma.computer.findFirst({
-        where: {
-          studentId: dto.studentId,
-          NOT: { id }, // derselbe Computer ist ok
-        },
-      });
-
-      if (existingForStudent) {
-        throw new BadRequestException(
-          `Student ${dto.studentId} ist bereits einem Computer (${existingForStudent.name}) zugeordnet`,
-        );
-      }
+      // benutze deine spezialisierte Error-Klasse
+      await this.ensureStudentNotAssigned(dto.studentId, id);
     }
 
     return this.prisma.computer.update({
@@ -226,7 +200,7 @@ export class ComputersService {
     });
 
     if (!student) {
-      throw new BadRequestException('Student not found');
+      throw new BadRequestException('Student nicht gefunden');
     }
 
     if (student.pool) {
@@ -251,5 +225,29 @@ export class ComputersService {
       where: { id: computer.id },
       data: { studentId: student.id },
     });
+  }
+
+  private async ensureStudentNotAssigned(
+    studentId: string,
+    ignoreComputerId?: string,
+  ) {
+    const existing = await this.prisma.computer.findFirst({
+      where: {
+        studentId,
+        ...(ignoreComputerId ? { NOT: { id: ignoreComputerId } } : {}),
+      },
+    });
+
+    if (!existing) {
+      return;
+    }
+
+    if (ignoreComputerId) {
+      throw new StudentAlreadyAssignedError(studentId, existing.name);
+    }
+
+    throw new BadRequestException(
+      `Student ${studentId} ist bereits einem Computer (${existing.name}) zugeordnet`,
+    );
   }
 }
