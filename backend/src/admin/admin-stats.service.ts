@@ -1,4 +1,3 @@
-// src/admin/admin-stats.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -6,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class AdminStatsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAdminStats() {
+  async getOverview() {
     const [totalComputers, pendingRequests, occupiedComputers] =
       await Promise.all([
         this.prisma.computer.count(),

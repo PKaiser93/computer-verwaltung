@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api/apiFetch';
+import { ApiErrorResponse, ApiResult } from '@/lib/api/types';
 
 type RoomStats = {
   totalRooms: number;
@@ -29,14 +30,23 @@ export default function RoomsDashboardPage() {
       setError(null);
 
       const [statsResult, roomsResult] = await Promise.all([
-        apiFetch<RoomStats>('/stats/rooms'),
-        apiFetch<SimpleRoom[]>('/stats/rooms/with-count'),
+        apiFetch<RoomStats>('/rooms/stats/overview'),
+        apiFetch<SimpleRoom[]>('/rooms/stats/with-count'),
       ]);
 
-      if (!statsResult.ok || !roomsResult.ok) {
-        const firstError = !statsResult.ok
+      function isError<T>(
+        r: ApiResult<T>,
+      ): r is { ok: false; error: ApiErrorResponse; userMessage: string } {
+        return !r.ok;
+      }
+
+      if (isError(statsResult) || isError(roomsResult)) {
+        const firstError = isError(statsResult)
           ? statsResult.userMessage
-          : roomsResult.userMessage;
+          : isError(roomsResult)
+            ? roomsResult.userMessage
+            : 'Fehler beim Laden der Daten.';
+
         setError(firstError);
         setLoading(false);
         return;
@@ -65,13 +75,20 @@ export default function RoomsDashboardPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="mb-2 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Räume-Dashboard</h1>
-        <Link
-          href="/admin/rooms"
-          className="text-xs text-gray-600 hover:text-gray-900"
-        >
-          → Zur Raumliste
-        </Link>
+        <div>
+          <h1 className="text-2xl font-semibold">Räume-Dashboard</h1>
+          <p className="mt-1 text-[11px] text-gray-500">
+            Übersicht über alle Räume und deren Belegung mit Computern.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/rooms/new"
+            className="rounded-md bg-emerald-600 px-3 py-1 text-[11px] font-medium text-white hover:bg-emerald-700"
+          >
+            Neuen Raum anlegen
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

@@ -1,32 +1,27 @@
-import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
+// backend/src/computers/dto/list-computers.query.ts
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
-export class ListComputersQuery {
-    @IsInt()
-    @Min(1)
-    @Type(() => Number)
-    @IsOptional()
-    page?: number = 1;
+export enum ComputerStatusFilter {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  MAINTENANCE = 'maintenance',
+}
 
-    @IsInt()
-    @Min(1)
-    @Type(() => Number)
-    @IsOptional()
-    limit?: number = 20;
+export class ListComputersQuery extends PaginationDto {
+  @IsOptional()
+  @IsEnum(ComputerStatusFilter)
+  status?: ComputerStatusFilter;
 
-    @IsEnum(['active', 'inactive', 'maintenance'])
-    @IsOptional()
-    status?: 'active' | 'inactive' | 'maintenance';
+  @IsOptional()
+  @IsString()
+  roomId?: string;
 
-    @IsString()
-    @IsOptional()
-    roomId?: string;
+  @IsOptional()
+  @IsString()
+  employeeId?: string;
 
-    @IsString()
-    @IsOptional()
-    employeeId?: string;
-
-    @IsString()
-    @IsOptional()
-    studentId?: string;
+  @IsOptional()
+  @IsString()
+  studentId?: string;
 }

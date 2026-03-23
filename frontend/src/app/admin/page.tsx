@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api/apiFetch';
+import { ApiErrorResponse, ApiResult } from '@/lib/api/types';
 
 type AdminStats = {
   totalComputers: number;
@@ -38,17 +39,26 @@ export default function AdminDashboardPage() {
       setError(null);
 
       const [adminRes, empRes, studRes] = await Promise.all([
-        apiFetch<AdminStats>('/stats/admin'),
-        apiFetch<EmployeeStats>('/stats/employees'),
-        apiFetch<StudentStats>('/stats/students'),
+        apiFetch<AdminStats>('/admin/stats/overview'),
+        apiFetch<EmployeeStats>('/employees/stats/overview'),
+        apiFetch<StudentStats>('/students/stats/overview'),
       ]);
 
-      if (!adminRes.ok || !empRes.ok || !studRes.ok) {
-        const firstError = !adminRes.ok
+      function isError<T>(
+        r: ApiResult<T>,
+      ): r is { ok: false; error: ApiErrorResponse; userMessage: string } {
+        return !r.ok;
+      }
+
+      if (isError(adminRes) || isError(empRes) || isError(studRes)) {
+        const firstError = isError(adminRes)
           ? adminRes.userMessage
-          : !empRes.ok
+          : isError(empRes)
             ? empRes.userMessage
-            : studRes.userMessage;
+            : isError(studRes)
+              ? studRes.userMessage
+              : 'Unbekannter Fehler';
+
         setError(firstError);
         setLoading(false);
         return;

@@ -1,4 +1,3 @@
-// src/rooms/rooms-stats.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -6,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class RoomsStatsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getRoomStats() {
+  async getOverview() {
     const [totalRooms, roomsWithComputers] = await Promise.all([
       this.prisma.raum.count(),
       this.prisma.raum.count({
@@ -33,10 +32,10 @@ export class RoomsStatsService {
       orderBy: { name: 'asc' },
     });
 
-    return rooms.map((r) => ({
-      id: r.id,
-      name: r.name,
-      computerCount: r._count.computers,
+    return rooms.map((room) => ({
+      id: room.id,
+      name: room.name,
+      computerCount: room._count.computers,
     }));
   }
 }

@@ -1,18 +1,17 @@
-// src/rooms/rooms-stats.controller.ts
 import { Controller, Get } from '@nestjs/common';
 import { RoomsStatsService } from './rooms-stats.service';
 
-@Controller('stats/rooms')
+@Controller('rooms/stats')
 export class RoomsStatsController {
-  constructor(private readonly statsService: RoomsStatsService) {}
+  constructor(private readonly roomsStatsService: RoomsStatsService) {}
 
-  @Get()
-  getStats() {
-    return this.statsService.getRoomStats();
+  @Get('overview')
+  getOverview() {
+    return this.roomsStatsService.getOverview();
   }
 
   @Get('with-count')
   getRoomsWithCount() {
-    return this.statsService.getRoomsWithCount();
+    return this.roomsStatsService.getRoomsWithCount();
   }
 }

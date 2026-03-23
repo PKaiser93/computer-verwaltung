@@ -24,6 +24,7 @@ export class RequestsService {
     const mitarbeiter = await this.prisma.mitarbeiter.findUnique({
       where: { id: dto.mitarbeiterId },
     });
+
     if (!mitarbeiter) {
       throw new BadRequestException(
         'Antragsteller (Mitarbeiter) nicht gefunden',
@@ -67,12 +68,12 @@ export class RequestsService {
     });
 
     if (!existing) {
-      throw new NotFoundException(`WorkstationRequest ${id} not found`);
+      throw new NotFoundException(`Workstation-Request ${id} nicht gefunden`);
     }
 
     if (existing.status !== 'PENDING') {
       throw new BadRequestException(
-        'Status kann nur von PENDING geändert werden',
+        'Status kann nur aus dem Zustand PENDING geändert werden',
       );
     }
 
@@ -107,10 +108,16 @@ export class RequestsService {
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.workstationRequest.findUnique({
+  async findOne(id: string) {
+    const request = await this.prisma.workstationRequest.findUnique({
       where: { id },
       include: { mitarbeiter: true },
     });
+
+    if (!request) {
+      throw new NotFoundException(`Workstation-Request ${id} nicht gefunden`);
+    }
+
+    return request;
   }
 }

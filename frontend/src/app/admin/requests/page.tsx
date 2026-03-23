@@ -31,7 +31,7 @@ export default function AdminRequestsPage() {
         setRequests(data);
       } catch (err: any) {
         const message =
-          err.message ?? 'Unbekannter Fehler beim Laden der Anträge.';
+          err?.message ?? 'Unbekannter Fehler beim Laden der Anträge.';
         setError(message);
         showToast(message, 'error');
       } finally {
@@ -55,7 +55,7 @@ export default function AdminRequestsPage() {
     setActionLoadingId(request.id);
     try {
       const updated = await updateWorkstationRequestStatus(
-        request.id,
+        request.id, // string, passt zu Prisma
         action,
         note ?? undefined,
       );
@@ -69,7 +69,7 @@ export default function AdminRequestsPage() {
         'success',
       );
     } catch (err: any) {
-      const message = err.message ?? 'Fehler bei der Aktion';
+      const message = err?.message ?? 'Fehler bei der Aktion';
       showToast(message, 'error');
       alert(message);
     } finally {
@@ -177,25 +177,17 @@ export default function AdminRequestsPage() {
                     <div className="inline-flex gap-2">
                       <button
                         className="inline-flex items-center rounded-md bg-green-600 px-2 py-1 text-[11px] font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-green-300"
-                        disabled={
-                          actionLoadingId === r.id || r.status === 'APPROVED'
-                        }
+                        disabled={actionLoadingId === r.id}
                         onClick={() => handleAction(r, 'approve')}
                       >
-                        {actionLoadingId === r.id && r.status !== 'APPROVED'
-                          ? '...'
-                          : 'Genehmigen'}
+                        {actionLoadingId === r.id ? '...' : 'Genehmigen'}
                       </button>
                       <button
                         className="inline-flex items-center rounded-md bg-red-600 px-2 py-1 text-[11px] font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
-                        disabled={
-                          actionLoadingId === r.id || r.status === 'REJECTED'
-                        }
+                        disabled={actionLoadingId === r.id}
                         onClick={() => handleAction(r, 'reject')}
                       >
-                        {actionLoadingId === r.id && r.status !== 'REJECTED'
-                          ? '...'
-                          : 'Ablehnen'}
+                        {actionLoadingId === r.id ? '...' : 'Ablehnen'}
                       </button>
                     </div>
                   ) : (

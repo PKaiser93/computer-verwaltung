@@ -27,34 +27,50 @@ export class EmployeesService {
       where: { id },
       include: { computers: true },
     });
+
     if (!employee) {
-      throw new NotFoundException(`Mitarbeiter ${id} not found`);
+      throw new NotFoundException(`Mitarbeiter ${id} nicht gefunden`);
     }
+
     return employee;
   }
 
-  async create(data: CreateEmployeeDto) {
+  async create(dto: CreateEmployeeDto) {
     const id = await this.idGenerator.generateEmployeeId();
 
     return this.prisma.mitarbeiter.create({
       data: {
         id,
-        name: data.name,
-        email: data.email,
+        name: dto.name,
+        email: dto.email,
       },
     });
   }
 
-  async update(id: string, data: UpdateEmployeeDto) {
-    await this.findOne(id);
+  async update(id: string, dto: UpdateEmployeeDto) {
+    const existing = await this.prisma.mitarbeiter.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Mitarbeiter ${id} nicht gefunden`);
+    }
+
     return this.prisma.mitarbeiter.update({
       where: { id },
-      data,
+      data: dto,
     });
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const existing = await this.prisma.mitarbeiter.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Mitarbeiter ${id} nicht gefunden`);
+    }
+
     return this.prisma.mitarbeiter.delete({
       where: { id },
     });

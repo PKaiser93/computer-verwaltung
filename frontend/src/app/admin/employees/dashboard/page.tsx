@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api/apiFetch';
+import { ApiErrorResponse, ApiResult } from '@/lib/api/types';
 
 type EmployeeStats = {
   totalEmployees: number;
@@ -34,10 +35,19 @@ export default function EmployeesDashboardPage() {
         apiFetch<SimpleEmployee[]>('/stats/employees/without-computers'),
       ]);
 
-      if (!statsResult.ok || !withoutResult.ok) {
-        const firstError = !statsResult.ok
+      function isError<T>(
+        r: ApiResult<T>,
+      ): r is { ok: false; error: ApiErrorResponse; userMessage: string } {
+        return !r.ok;
+      }
+
+      if (isError(statsResult) || isError(withoutResult)) {
+        const firstError = isError(statsResult)
           ? statsResult.userMessage
-          : withoutResult.userMessage;
+          : isError(withoutResult)
+            ? withoutResult.userMessage
+            : 'Fehler beim Laden des Dashboards.';
+
         setError(firstError);
         setLoading(false);
         return;

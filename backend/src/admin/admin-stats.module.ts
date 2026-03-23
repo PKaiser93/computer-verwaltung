@@ -1,11 +1,12 @@
-// src/admin/admin-stats.module.ts
 import { Module } from '@nestjs/common';
 import { AdminStatsService } from './admin-stats.service';
 import { AdminStatsController } from './admin-stats.controller';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [AdminStatsController],
-  providers: [AdminStatsService, PrismaService],
+  providers: [AdminStatsService],
+  exports: [AdminStatsService],
 })
 export class AdminStatsModule {}

@@ -1,18 +1,17 @@
-// src/students/students-stats.controller.ts
 import { Controller, Get } from '@nestjs/common';
 import { StudentsStatsService } from './students-stats.service';
 
-@Controller('stats/students')
+@Controller('students/stats')
 export class StudentsStatsController {
-  constructor(private readonly statsService: StudentsStatsService) {}
+  constructor(private readonly studentsStatsService: StudentsStatsService) {}
 
-  @Get()
-  getStats() {
-    return this.statsService.getStudentStats();
+  @Get('overview')
+  getOverview() {
+    return this.studentsStatsService.getOverview();
   }
 
   @Get('without-computer')
   getWithoutComputer() {
-    return this.statsService.getStudentsWithoutComputer();
+    return this.studentsStatsService.getStudentsWithoutComputer();
   }
 }

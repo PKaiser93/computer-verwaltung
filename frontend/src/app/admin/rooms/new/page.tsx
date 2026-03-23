@@ -30,9 +30,11 @@ export default function NewRoomPage() {
     setSubmitting(true);
     setError(null);
 
+    const payload: CreateRoomDto = { name: name.trim() };
+
     const result = await apiFetch<Room>('/rooms', {
       method: 'POST',
-      body: { name: name.trim() } as CreateRoomDto,
+      body: payload, // kein JSON.stringify nötig
     });
 
     if (!result.ok) {
@@ -41,10 +43,7 @@ export default function NewRoomPage() {
       return;
     }
 
-    // Erfolg-Toast
     showToast(`Raum "${result.data.name}" wurde angelegt.`, 'success');
-
-    // Redirect
     router.push('/admin/rooms/dashboard');
   }
 

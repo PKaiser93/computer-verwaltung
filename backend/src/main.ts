@@ -23,7 +23,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  const port = process.env.PORT || 4000; // <--- statt 3000
+  const port = process.env.PORT || 3000; // <--- statt 3000
   await app.listen(port);
   console.log(`Backend läuft auf http://localhost:${port}`);
 }

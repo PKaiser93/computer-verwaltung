@@ -1,18 +1,17 @@
-// src/employees/employees-stats.controller.ts
 import { Controller, Get } from '@nestjs/common';
 import { EmployeesStatsService } from './employees-stats.service';
 
-@Controller('stats/employees')
+@Controller('employees/stats')
 export class EmployeesStatsController {
-  constructor(private readonly statsService: EmployeesStatsService) {}
+  constructor(private readonly employeesStatsService: EmployeesStatsService) {}
 
-  @Get()
-  getStats() {
-    return this.statsService.getEmployeeStats();
+  @Get('overview')
+  getOverview() {
+    return this.employeesStatsService.getOverview();
   }
 
   @Get('without-computers')
   getWithoutComputers() {
-    return this.statsService.getEmployeesWithoutComputers();
+    return this.employeesStatsService.getEmployeesWithoutComputers();
   }
 }

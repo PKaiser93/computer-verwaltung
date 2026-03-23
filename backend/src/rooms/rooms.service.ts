@@ -1,4 +1,4 @@
-// Variante mit IdGeneratorService (empfohlen)
+// backend/src/rooms/rooms.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -24,33 +24,49 @@ export class RoomsService {
       where: { id },
       include: { computers: true },
     });
+
     if (!room) {
-      throw new NotFoundException(`Raum ${id} not found`);
+      throw new NotFoundException(`Raum ${id} nicht gefunden`);
     }
+
     return room;
   }
 
-  async create(data: CreateRoomDto) {
+  async create(dto: CreateRoomDto) {
     const id = await this.idGenerator.generateUniqueIdForRoom();
 
     return this.prisma.raum.create({
       data: {
         id,
-        name: data.name.trim(),
+        name: dto.name.trim(),
       },
     });
   }
 
-  async update(id: string, data: UpdateRoomDto) {
-    await this.findOne(id);
+  async update(id: string, dto: UpdateRoomDto) {
+    const existing = await this.prisma.raum.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Raum ${id} nicht gefunden`);
+    }
+
     return this.prisma.raum.update({
       where: { id },
-      data,
+      data: dto,
     });
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const existing = await this.prisma.raum.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Raum ${id} nicht gefunden`);
+    }
+
     return this.prisma.raum.delete({
       where: { id },
     });

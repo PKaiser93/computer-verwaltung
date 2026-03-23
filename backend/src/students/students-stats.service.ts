@@ -1,4 +1,3 @@
-// src/students/students-stats.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -6,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class StudentsStatsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getStudentStats() {
+  async getOverview() {
     const [
       totalStudents,
       poolStudents,
@@ -19,11 +18,14 @@ export class StudentsStatsService {
       this.prisma.student.count({ where: { computer: { isNot: null } } }),
     ]);
 
+    const studentsWithoutComputer = totalStudents - studentsWithComputer;
+
     return {
       totalStudents,
       poolStudents,
       personalStudents,
       studentsWithComputer,
+      studentsWithoutComputer,
     };
   }
 

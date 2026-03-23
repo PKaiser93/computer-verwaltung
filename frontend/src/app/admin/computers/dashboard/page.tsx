@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api/apiFetch';
+import { ApiErrorResponse, ApiResult } from '@/lib/api/types';
 
 type ComputerStatus = 'active' | 'inactive' | 'maintenance';
 
@@ -50,19 +51,28 @@ export default function ComputerDashboardPage() {
         apiFetch<SimpleComputer[]>('/computers/stats/maintenance'),
       ]);
 
+      function isError<T>(
+        r: ApiResult<T>,
+      ): r is { ok: false; error: ApiErrorResponse; userMessage: string } {
+        return !r.ok;
+      }
+
       if (
-        !statsResult.ok ||
-        !withoutRoomResult.ok ||
-        !withoutAssignmentResult.ok ||
-        !maintenanceResult.ok
+        isError(statsResult) ||
+        isError(withoutRoomResult) ||
+        isError(withoutAssignmentResult) ||
+        isError(maintenanceResult)
       ) {
-        const firstError = !statsResult.ok
+        const firstError = isError(statsResult)
           ? statsResult.userMessage
-          : !withoutRoomResult.ok
+          : isError(withoutRoomResult)
             ? withoutRoomResult.userMessage
-            : !withoutAssignmentResult.ok
+            : isError(withoutAssignmentResult)
               ? withoutAssignmentResult.userMessage
-              : maintenanceResult.userMessage;
+              : isError(maintenanceResult)
+                ? maintenanceResult.userMessage
+                : 'Unbekannter Fehler';
+
         setError(firstError);
         setLoading(false);
         return;

@@ -30,8 +30,8 @@ export default function StudentsDashboardPage() {
       setError(null);
 
       const [statsResult, withoutCompResult] = await Promise.all([
-        apiFetch<StudentStats>('/stats/students'),
-        apiFetch<SimpleStudent[]>('/stats/students/without-computer'),
+        apiFetch<StudentStats>('/students/stats/overview'),
+        apiFetch<SimpleStudent[]>('/students/stats/without-computer'),
       ]);
 
       if (!statsResult.ok || !withoutCompResult.ok) {

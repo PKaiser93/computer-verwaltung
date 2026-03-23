@@ -1,3 +1,4 @@
+// backend/src/students/students.service.ts
 import {
   BadRequestException,
   Injectable,
@@ -6,8 +7,8 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-import { random5Digits } from '../common/id.utils';
 import { IdGeneratorService } from '../common/id-generator.service';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class StudentsService {
@@ -16,11 +17,29 @@ export class StudentsService {
     private readonly idGenerator: IdGeneratorService,
   ) {}
 
-  findAll() {
-    return this.prisma.student.findMany({
-      include: { computer: true },
-      orderBy: { name: 'asc' },
-    });
+  async findAll(pagination: PaginationDto) {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 50;
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.student.findMany({
+        orderBy: { name: 'asc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.student.count(),
+    ]);
+
+    return {
+      data: items,
+      meta: {
+        page,
+        limit,
+        total,
+        pageCount: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string) {
@@ -28,14 +47,17 @@ export class StudentsService {
       where: { id },
       include: { computer: true },
     });
+
     if (!student) {
-      throw new NotFoundException(`Student ${id} not found`);
+      throw new NotFoundException(`Student ${id} nicht gefunden`);
     }
+
     return student;
   }
 
   async create(dto: CreateStudentDto) {
     const id = await this.idGenerator.generateStudentId();
+
     return this.prisma.student.create({
       data: {
         id,
@@ -46,17 +68,17 @@ export class StudentsService {
     });
   }
 
-  async update(id: string, data: UpdateStudentDto) {
+  async update(id: string, dto: UpdateStudentDto) {
     const existing = await this.prisma.student.findUnique({
       where: { id },
       include: { computer: true },
     });
 
     if (!existing) {
-      throw new NotFoundException(`Student ${id} not found`);
+      throw new NotFoundException(`Student ${id} nicht gefunden`);
     }
 
-    if (data.pool === true && existing.computer) {
+    if (dto.pool === true && existing.computer) {
       throw new BadRequestException(
         'Student hat einen personalisierten Computer und kann nicht als Pool-Student markiert werden',
       );
@@ -64,7 +86,7 @@ export class StudentsService {
 
     return this.prisma.student.update({
       where: { id },
-      data,
+      data: dto,
     });
   }
 
@@ -73,14 +95,5 @@ export class StudentsService {
     return this.prisma.student.delete({
       where: { id },
     });
-  }
-
-  private async generateStudentId(): Promise<string> {
-    for (let i = 0; i < 5; i++) {
-      const id = `LRT-S-${random5Digits()}`;
-      const exists = await this.prisma.student.findUnique({ where: { id } });
-      if (!exists) return id;
-    }
-    throw new Error('Konnte keine eindeutige Studenten-ID generieren');
   }
 }

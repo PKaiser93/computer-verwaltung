@@ -15,6 +15,7 @@ import { UpdateComputerDto } from './dto/update-computer.dto';
 import { AssignStudentDto } from './dto/assign-student.dto';
 import { AssignEmployeeDto } from './dto/assign-employee.dto';
 import { ListComputersQuery } from './dto/list-computers.query';
+import { IdParamDto } from '../common/dto/id-param.dto';
 
 @Controller('computers')
 export class ComputersController {
@@ -26,8 +27,8 @@ export class ComputersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.computersService.findOne(id);
+  findOne(@Param() params: IdParamDto) {
+    return this.computersService.findOne(params.id);
   }
 
   @Post()
@@ -36,22 +37,28 @@ export class ComputersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateComputerDto) {
-    return this.computersService.update(id, dto);
+  update(@Param() params: IdParamDto, @Body() dto: UpdateComputerDto) {
+    return this.computersService.update(params.id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.computersService.remove(id);
+  remove(@Param() params: IdParamDto) {
+    return this.computersService.remove(params.id);
   }
 
   @Patch(':id/student')
-  assignStudent(@Param('id') id: string, @Body() dto: AssignStudentDto) {
-    return this.computersService.assignStudent(id, dto.studentId ?? null);
+  assignStudent(@Param() params: IdParamDto, @Body() dto: AssignStudentDto) {
+    return this.computersService.assignStudent(
+      params.id,
+      dto.studentId ?? null,
+    );
   }
 
   @Patch(':id/employee')
-  assignEmployee(@Param('id') id: string, @Body() dto: AssignEmployeeDto) {
-    return this.computersService.assignEmployee(id, dto.employeeId ?? null);
+  assignEmployee(@Param() params: IdParamDto, @Body() dto: AssignEmployeeDto) {
+    return this.computersService.assignEmployee(
+      params.id,
+      dto.employeeId ?? null,
+    );
   }
 }

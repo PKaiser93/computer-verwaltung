@@ -1,4 +1,3 @@
-// src/employees/employees-stats.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -6,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class EmployeesStatsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getEmployeeStats() {
+  async getOverview() {
     const [totalEmployees, employeesWithComputers] = await Promise.all([
       this.prisma.mitarbeiter.count(),
       this.prisma.mitarbeiter.count({
@@ -14,9 +13,12 @@ export class EmployeesStatsService {
       }),
     ]);
 
+    const employeesWithoutComputers = totalEmployees - employeesWithComputers;
+
     return {
       totalEmployees,
       employeesWithComputers,
+      employeesWithoutComputers,
     };
   }
 

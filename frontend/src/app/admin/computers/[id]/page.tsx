@@ -6,12 +6,21 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api/apiFetch';
 import { useToast } from '@/lib/toast/ToastContext';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+import { ApiErrorResponse, ApiResult } from '@/lib/api/types';
 
 type Room = { id: string; name: string };
 type Employee = { id: string; name: string };
 type Student = { id: string; name: string };
+
+type Paginated<T> = {
+  data: T[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    pageCount: number;
+  };
+};
 
 type Computer = {
   id: string;
@@ -22,12 +31,6 @@ type Computer = {
   raumId?: string | null;
   mitarbeiterId?: string | null;
   studentId?: string | null;
-};
-
-type ApiErrorResponse = {
-  statusCode: number;
-  code?: string;
-  message: string | string[];
 };
 
 export default function EditComputerPage() {
@@ -58,24 +61,35 @@ export default function EditComputerPage() {
           apiFetch<Computer>(`/computers/${id}`),
           apiFetch<Room[]>(`/rooms`),
           apiFetch<Employee[]>(`/employees`),
-          apiFetch<Student[]>(`/students`),
+          apiFetch<Paginated<Student>>(`/students?page=1&limit=100`),
         ]);
 
-      if (!computerResult.ok) {
+      function isError<T>(
+        r: ApiResult<T>,
+      ): r is { ok: false; error: ApiErrorResponse; userMessage: string } {
+        return !r.ok;
+      }
+
+      if (isError(computerResult)) {
         setError(computerResult.userMessage);
         showToast(computerResult.userMessage, 'error');
         setLoading(false);
         return;
       }
-      if (!roomsResult.ok || !employeesResult.ok || !studentsResult.ok) {
-        const firstError =
-          roomsResult.ok === false
-            ? roomsResult.userMessage
-            : employeesResult.ok === false
-              ? employeesResult.userMessage
-              : studentsResult.ok === false
-                ? studentsResult.userMessage
-                : 'Fehler beim Laden der Stammdaten.';
+
+      if (
+        isError(roomsResult) ||
+        isError(employeesResult) ||
+        isError(studentsResult)
+      ) {
+        const firstError = isError(roomsResult)
+          ? roomsResult.userMessage
+          : isError(employeesResult)
+            ? employeesResult.userMessage
+            : isError(studentsResult)
+              ? studentsResult.userMessage
+              : 'Fehler beim Laden der Stammdaten.';
+
         setError(firstError);
         showToast(firstError, 'error');
         setLoading(false);
@@ -95,7 +109,7 @@ export default function EditComputerPage() {
       });
       setRooms(roomsResult.data);
       setEmployees(employeesResult.data);
-      setStudents(studentsResult.data);
+      setStudents(studentsResult.data.data);
 
       setLoading(false);
     }
@@ -118,23 +132,23 @@ export default function EditComputerPage() {
     const payload = {
       name: formData.get('name') as string,
       type: formData.get('type') as string,
-      ipAddress: (formData.get('ipAddress') as string) || null,
+      ipAddress: (formData.get('ipAddress') as string) || undefined,
       status: formData.get('status') as string,
-      raumId: (formData.get('raumId') as string) || null,
-      mitarbeiterId: (formData.get('mitarbeiterId') as string) || null,
-      studentId: (formData.get('studentId') as string) || null,
+      raumId: (formData.get('raumId') as string) || undefined,
+      mitarbeiterId: (formData.get('mitarbeiterId') as string) || undefined,
+      studentId: (formData.get('studentId') as string) || undefined,
     };
 
     const result = await apiFetch<Computer>(`/computers/${id}`, {
       method: 'PATCH',
-      body: JSON.stringify(payload),
+      body: payload,
     });
 
     if (!result.ok) {
       setSaveError(result.userMessage);
       showToast(result.userMessage, 'error');
 
-      const err = result.error as ApiErrorResponse;
+      const err = result.error;
       if (err.code === 'STUDENT_ALREADY_ASSIGNED') {
         setStudentError(
           'Dieser Student ist bereits einem anderen Computer zugeordnet.',

@@ -10,6 +10,7 @@ import {
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { IdParamDto } from '../common/dto/id-param.dto';
 
 @Controller('rooms')
 export class RoomsController {
@@ -21,8 +22,8 @@ export class RoomsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.roomsService.findOne(id);
+  findOne(@Param() params: IdParamDto) {
+    return this.roomsService.findOne(params.id);
   }
 
   @Post()
@@ -31,12 +32,12 @@ export class RoomsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateRoomDto) {
-    return this.roomsService.update(id, dto);
+  update(@Param() params: IdParamDto, @Body() dto: UpdateRoomDto) {
+    return this.roomsService.update(params.id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.roomsService.remove(id);
+  remove(@Param() params: IdParamDto) {
+    return this.roomsService.remove(params.id);
   }
 }
